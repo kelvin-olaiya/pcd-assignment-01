@@ -30,7 +30,6 @@ class UnsafeCounter(
         }
     }
 
-
     private fun getInterval(lines: Int) = intervals.first { lines in it }
 
     override fun filesInNthInterval(index: Int) = counters[index]
