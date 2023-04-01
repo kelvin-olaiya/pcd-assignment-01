@@ -1,5 +1,9 @@
 package pcd.assignment
 
+import pcd.assignment.model.Counter
+import pcd.assignment.model.CounterObserver
+import pcd.assignment.model.ObservableCounter
+import pcd.assignment.model.SafeObservableCounter
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
@@ -29,12 +33,15 @@ private class ListView(listModel: ListModel<String>) : JList<String>(listModel) 
     }
 }
 
-class GUI : CounterObserver {
+class GUI(
+    controller: Controller,
+) : CounterObserver {
     private val frame = JFrame("Assignment#01")
     private val countingListModel = DefaultListModel<String>()
     private val longestFilesModel = DefaultListModel<String>()
     private val counting = ListView(countingListModel)
     private val leaderboard = ListView(longestFilesModel)
+    private var counter: ObservableCounter? = null
 
     init {
         frame.setSize(750, 380)
@@ -66,6 +73,16 @@ class GUI : CounterObserver {
         controlsPanel.add(startButton)
         controlsPanel.add(Box.createRigidArea(Dimension(20, 0)))
         controlsPanel.add(stopButton)
+        startButton.addActionListener {
+            val maxLines = maxLinesBox.spinner.model.value as Int
+            val intervals = intervalsBox.spinner.model.value as Int
+            val longestFiles = longestFilesBox.spinner.model.value as Int
+            counter = SafeObservableCounter(maxLines, intervals, longestFiles)
+            counter?.let {
+                it.addObserver(this)
+                controller.startCounting(it)
+            }
+        }
         controlsPanel.border = BorderFactory.createEmptyBorder(0, 10, 10, 10)
         controlsPanel.alignmentX = Component.CENTER_ALIGNMENT
 
@@ -76,6 +93,18 @@ class GUI : CounterObserver {
     }
 
     override fun counterUpdated() {
-        TODO("Not yet implemented")
+        SwingUtilities.invokeLater {
+            counter?.let {
+                countingListModel.clear()
+                val results = it.intervals.withIndex().map { indexedValue ->
+                    val index = indexedValue.index
+                    val value = indexedValue.value
+                    "[${value.first}; ${value.last}] => ${it.filesInNthInterval(index)}"
+                }.toList()
+                countingListModel.addAll(results)
+                longestFilesModel.clear()
+                longestFilesModel.addAll(it.getNLongestFiles())
+            }
+        }
     }
 }

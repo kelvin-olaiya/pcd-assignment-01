@@ -1,5 +1,6 @@
 package pcd.assignment
 
+import pcd.assignment.model.Counter
 import java.nio.file.Path
 
 class Worker(
@@ -8,6 +9,9 @@ class Worker(
 ) : Runnable {
 
     override fun run() {
-        files.map { it.toFile() }.forEach { counter.submit(it, it.readLines().size) }
+        files.map { it.toFile() }.forEach {
+            counter.submit(it, it.readLines().size)
+            Thread.sleep(5)
+        }
     }
 }

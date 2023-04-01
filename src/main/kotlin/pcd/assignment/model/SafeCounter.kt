@@ -1,4 +1,4 @@
-package pcd.assignment
+package pcd.assignment.model
 
 import java.io.File
 
