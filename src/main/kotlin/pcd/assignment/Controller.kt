@@ -9,19 +9,24 @@ import kotlin.io.path.isDirectory
 
 class Controller {
 
+    private val stopFlag = Flag()
+    private val batches = getJavaFilesFrom(Path.of(ROOT_FOLDER)).generateBatches(DEFAULT_N_WORKERS)
+
     fun startCounting(counter: Counter) {
-        val directory = Path.of(ROOT_FOLDER)
-        val batches = getJavaFilesFrom(directory).generateBatches(DEFAULT_N_WORKERS)
-        val workers = batches.filter { it.isNotEmpty() }.map { chunk -> Worker(chunk,counter) }.map { Thread(it) }
+        val workers = batches.filter { it.isNotEmpty() }
+            .map { chunk -> Worker(chunk, counter, stopFlag) }
+            .map { Thread(it) }
+        stopFlag.reset()
         workers.forEach { it.start() }
     }
 
-    private fun getJavaFilesFrom(path: Path): List<Path> = Files.walk(path)
+    private fun getJavaFilesFrom(path: Path): List<File> = Files.walk(path)
         .filter { it.extension == "java" }
         .filter { !it.isDirectory() }
+        .map { it.toFile() }
         .toList()
 
-    private fun List<Path>.generateBatches(nThreads: Int): List<List<Path>> {
+    private fun List<File>.generateBatches(nThreads: Int): List<List<File>> {
         val numberOfFiles = this.size
         val filesPerBatch = (numberOfFiles / nThreads).let { if (it == 0) numberOfFiles else it }
         val splitIndex = ((numberOfFiles - (numberOfFiles % nThreads)) - filesPerBatch).let {
@@ -29,6 +34,8 @@ class Controller {
         }
         return slice(0 until splitIndex).chunked(filesPerBatch) + listOf(subList(splitIndex, numberOfFiles))
     }
+
+    fun stopCounting() = stopFlag.set()
 
     companion object {
         private val SEP = File.separator

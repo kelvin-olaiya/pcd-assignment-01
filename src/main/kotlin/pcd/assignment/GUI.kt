@@ -1,6 +1,5 @@
 package pcd.assignment
 
-import pcd.assignment.model.Counter
 import pcd.assignment.model.CounterObserver
 import pcd.assignment.model.ObservableCounter
 import pcd.assignment.model.SafeObservableCounter
@@ -80,9 +79,10 @@ class GUI(
             counter = SafeObservableCounter(maxLines, intervals, longestFiles)
             counter?.let {
                 it.addObserver(this)
-                controller.startCounting(it)
+                Thread { controller.startCounting(it) }.start()
             }
         }
+        stopButton.addActionListener { controller.stopCounting() }
         controlsPanel.border = BorderFactory.createEmptyBorder(0, 10, 10, 10)
         controlsPanel.alignmentX = Component.CENTER_ALIGNMENT
 

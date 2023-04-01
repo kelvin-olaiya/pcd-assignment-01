@@ -43,5 +43,5 @@ class UnsafeCounter(
 
     override val totalFiles: Int get() = counters.sum()
 
-    override fun getNLongestFiles(): List<String> = longestFiles.sortedBy { it.second }.map { it.first }
+    override fun getNLongestFiles(): List<String> = longestFiles.sortedBy { -it.second }.map { it.first }
 }
