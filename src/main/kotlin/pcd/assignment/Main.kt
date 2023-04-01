@@ -38,4 +38,5 @@ fun main(args: Array<String>) {
     println("Counted in $duration ms using ${workers.size} threads")
     println("Longest files:")
     counter.getNLongestFiles().forEach { println(it) }
+    val gui = GUI()
 }
