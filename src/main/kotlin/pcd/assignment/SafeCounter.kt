@@ -5,9 +5,10 @@ import java.io.File
 class SafeCounter(
     maxLines: Int,
     numOfIntervals: Int,
+    numberOfLongestFiles: Int = 5
 ) : Counter {
 
-    private val counter = UnsafeCounter(maxLines, numOfIntervals)
+    private val counter = UnsafeCounter(maxLines, numOfIntervals, numberOfLongestFiles)
 
     @Synchronized override fun submit(file: File, lines: Int) = counter.submit(file, lines)
 
