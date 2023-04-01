@@ -18,5 +18,7 @@ class SafeCounter(
     override val totalFiles: Int
         @Synchronized get() = counter.totalFiles
 
+    @Synchronized override fun getNLongestFiles() = counter.getNLongestFiles()
+
     @Synchronized override fun toString() = counter.toString()
 }

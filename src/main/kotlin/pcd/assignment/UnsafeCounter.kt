@@ -6,6 +6,7 @@ import java.util.stream.Stream
 class UnsafeCounter(
     private val maxLines: Int,
     private val numOfIntervals: Int,
+    private val numberOfLongestFiles: Int = 5
 ) : Counter {
 
     override val intervals: List<IntRange> by lazy {
@@ -19,9 +20,16 @@ class UnsafeCounter(
     }
 
     private val counters = intervals.map { _ -> 0 }.toMutableList()
+    private val longestFiles = mutableListOf<Pair<String, Int>>()
 
-    override fun submit(file: File, lines: Int) =
+    override fun submit(file: File, lines: Int) {
         intervals.indexOf(getInterval(lines)).let { counters[it] = counters[it] + 1 }
+        longestFiles.add(Pair(file.name, lines))
+        if (longestFiles.size > numberOfLongestFiles) {
+            longestFiles.remove(longestFiles.minBy { it.second })
+        }
+    }
+
 
     private fun getInterval(lines: Int) = intervals.first { lines in it }
 
@@ -35,4 +43,6 @@ class UnsafeCounter(
     }
 
     override val totalFiles: Int get() = counters.sum()
+
+    override fun getNLongestFiles(): List<String> = longestFiles.sortedBy { it.second }.map { it.first }
 }

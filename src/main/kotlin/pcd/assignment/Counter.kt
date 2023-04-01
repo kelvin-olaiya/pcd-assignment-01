@@ -8,4 +8,5 @@ interface Counter {
     val intervals: List<IntRange>
     fun filesInNthInterval(index: Int): Int
     val totalFiles: Int
+    fun getNLongestFiles(): List<String>
 }
