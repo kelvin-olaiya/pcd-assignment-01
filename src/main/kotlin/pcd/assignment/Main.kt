@@ -15,7 +15,7 @@ private fun List<Path>.generateBatches(nThreads: Int): List<List<Path>> {
     return slice(0 until splitIndex).chunked(filesPerBatch) + listOf(subList(splitIndex, numberOfFiles))
 }
 
-private const val DEFAULT_N_WORKERS = 25
+private const val DEFAULT_N_WORKERS = 40
 
 fun main(args: Array<String>) {
     check(args.size == 3) { "Wrong number of parameters provided" }
