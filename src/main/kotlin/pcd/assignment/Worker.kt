@@ -2,11 +2,13 @@ package pcd.assignment
 
 import pcd.assignment.model.Counter
 import java.io.File
+import java.util.concurrent.CountDownLatch
 
 class Worker(
     private val files: List<File>,
     private val counter: Counter,
     private val stopFlag: Flag,
+    private val completeLatch: CountDownLatch
 ) : Runnable {
 
     override fun run() {
@@ -17,6 +19,7 @@ class Worker(
             }
             counter.submit(file, file.readLines().size)
         }
+        completeLatch.countDown()
         println("${Thread.currentThread().name} DONE!")
     }
 }

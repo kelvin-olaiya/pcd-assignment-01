@@ -1,25 +1,28 @@
 package pcd.assignment
 
 import pcd.assignment.model.Counter
+import pcd.assignment.view.View
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.CountDownLatch
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 
-class Controller {
+private typealias Batch = List<File>
+
+class Controller(
+    private val view: View,
+    rootFolder: String = DEFAULT_ROOT_FOLDER
+) {
 
     private val stopFlag = Flag()
-    private val workload = getJavaFilesFrom(Path.of(DEFAULT_ROOT_FOLDER))
+    private val workload = getJavaFilesFrom(Path.of(rootFolder))
 
     fun startCounting(counter: Counter, numberOfWorkers: Int = DEFAULT_N_WORKERS) {
         stopFlag.reset()
-        workload.generateBatches(numberOfWorkers)
-            .filter { it.isNotEmpty() }
-            .map { Worker(it, counter, stopFlag) }
-            .withIndex()
-            .map { Thread(it.value, "[Thread-${it.index}]") }
-            .forEach { it.start() }
+        val batches = workload.generateBatches(numberOfWorkers).filter { it.isNotEmpty() }
+        LauncherAndViewNotifier(batches, counter, view, stopFlag).start()
     }
 
     private fun getJavaFilesFrom(path: Path): List<File> = Files.walk(path)
@@ -41,6 +44,25 @@ class Controller {
 
     companion object {
         private val DEFAULT_ROOT_FOLDER = System.getProperty("user.home")
-        private const val DEFAULT_N_WORKERS = 9
+        private val DEFAULT_N_WORKERS = Runtime.getRuntime().availableProcessors() + 1
+    }
+}
+
+private class LauncherAndViewNotifier(
+    private val batches: Iterable<Batch>,
+    private val counter: Counter,
+    private val view: View,
+    private val stopFlag: Flag,
+) : Thread("CompletionWaiter") {
+    override fun run() {
+        val completionLatch = CountDownLatch(batches.count())
+        val workers = batches.map { Worker(it, counter, stopFlag, completionLatch) }
+            .withIndex()
+            .map { Thread(it.value, "[Worker-${it.index}]") }
+        val start = System.currentTimeMillis()
+        workers.forEach { it.start() }
+        completionLatch.await()
+        val duration = System.currentTimeMillis() - start
+        view.countingCompleted(duration)
     }
 }
