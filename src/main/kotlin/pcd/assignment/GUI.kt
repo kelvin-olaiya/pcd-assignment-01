@@ -1,6 +1,5 @@
 package pcd.assignment
 
-import pcd.assignment.model.CounterObserver
 import pcd.assignment.model.ObservableCounter
 import pcd.assignment.model.SafeObservableCounter
 import java.awt.BorderLayout
@@ -12,15 +11,31 @@ private class InputBox(prompt: String) : Box(BoxLayout.Y_AXIS) {
 
     val spinner = JSpinner(SpinnerNumberModel(0, 0, Int.MAX_VALUE, 1))
     init {
-        val label = JLabel(prompt)
-        label.alignmentX = Component.RIGHT_ALIGNMENT
-        add(label)
-        spinner.preferredSize = Dimension(100, 40)
-        spinner.maximumSize = spinner.preferredSize
-        spinner.maximumSize = spinner.preferredSize
-        spinner.alignmentX = Component.RIGHT_ALIGNMENT
-        add(spinner)
+        add(JLabel(prompt).apply { alignmentX = Component.RIGHT_ALIGNMENT })
+        add(spinner.apply { setSizeForText(this) })
     }
+}
+
+private class NumericBox(label: String) : Box(BoxLayout.Y_AXIS) {
+
+    private val textField = JTextField()
+    init {
+        add(JLabel(label).apply {  alignmentX = Component.RIGHT_ALIGNMENT })
+        add(textField.apply {
+            setSizeForText(this)
+            isEditable = false
+        })
+    }
+
+    fun reset() = update(0)
+    fun update(value: Int) { textField.text = value.toString() }
+}
+
+private fun setSizeForText(component: JComponent) {
+    component.preferredSize = Dimension(100, 40)
+    component.maximumSize = component.preferredSize
+    component.maximumSize = component.preferredSize
+    component.alignmentX = Component.RIGHT_ALIGNMENT
 }
 
 private class ListView(listModel: ListModel<String>) : JScrollPane(JList(listModel).apply {
@@ -31,16 +46,17 @@ private class ListView(listModel: ListModel<String>) : JScrollPane(JList(listMod
 class GUI(
     controller: Controller,
 ) : CounterObserver {
+
     private val frame = JFrame("Assignment#01")
     private val countingListModel = DefaultListModel<String>()
     private val longestFilesModel = DefaultListModel<String>()
     private val counting = ListView(countingListModel)
     private val leaderboard = ListView(longestFilesModel)
+    private val totalFilesBox = NumericBox("Files counted:")
     private var counter: ObservableCounter? = null
 
     init {
         frame.setSize(800, 600)
-        // frame.isResizable = false
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         val panel = frame.contentPane
 
@@ -68,14 +84,17 @@ class GUI(
         controlsPanel.add(startButton)
         controlsPanel.add(Box.createRigidArea(Dimension(20, 0)))
         controlsPanel.add(stopButton)
+        controlsPanel.add(Box.createGlue())
+        // controlsPanel.add(totalFilesBox)
         startButton.addActionListener {
+            totalFilesBox.reset()
             val maxLines = maxLinesBox.spinner.model.value as Int
             val intervals = intervalsBox.spinner.model.value as Int
             val longestFiles = longestFilesBox.spinner.model.value as Int
             counter = SafeObservableCounter(maxLines, intervals, longestFiles)
             counter?.let {
                 it.addObserver(this)
-                Thread { controller.startCounting(it) }.start()
+                controller.startCounting(it)
             }
         }
         stopButton.addActionListener { controller.stopCounting() }
@@ -88,10 +107,11 @@ class GUI(
         frame.isVisible = true
     }
 
-    override fun counterUpdated() {
+    override fun counterUpdated(filesCounted: Int) {
         SwingUtilities.invokeLater {
             counter?.let {
                 countingListModel.clear()
+                // totalFilesBox.update(filesCounted)
                 val results = it.intervals.withIndex().map { indexedValue ->
                     val index = indexedValue.index
                     val value = indexedValue.value

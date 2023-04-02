@@ -10,11 +10,13 @@ class Worker(
 ) : Runnable {
 
     override fun run() {
+        println("${Thread.currentThread().name} accepted a batch of size ${files.size}")
         for (file in files) {
             if (stopFlag.isSet()) {
                 return
             }
             counter.submit(file, file.readLines().size)
         }
+        println("${Thread.currentThread().name} DONE!")
     }
 }

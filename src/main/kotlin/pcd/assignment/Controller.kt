@@ -16,7 +16,10 @@ class Controller {
 
     fun startCounting(counter: Counter) {
         stopFlag.reset()
-        batches.map { Worker(it, counter, stopFlag) }.map { Thread(it) }.forEach { it.start() }
+        batches.map { Worker(it, counter, stopFlag) }
+            .withIndex()
+            .map { Thread(it.value, "[Thread-${it.index}]") }
+            .forEach { it.start() }
     }
 
     private fun getJavaFilesFrom(path: Path): List<File> = Files.walk(path)
@@ -39,6 +42,6 @@ class Controller {
     companion object {
         private val SEP = File.separator
         private val ROOT_FOLDER = "${SEP}home${SEP}kelvin"
-        private const val DEFAULT_N_WORKERS = 1
+        private const val DEFAULT_N_WORKERS = 10
     }
 }

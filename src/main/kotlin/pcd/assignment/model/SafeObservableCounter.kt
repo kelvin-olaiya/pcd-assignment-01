@@ -1,5 +1,6 @@
 package pcd.assignment.model
 
+import pcd.assignment.CounterObserver
 import java.io.File
 
 class SafeObservableCounter(
@@ -18,6 +19,6 @@ class SafeObservableCounter(
         notifyObservers()
     }
 
-    private fun notifyObservers() = observers.forEach { it.counterUpdated() }
+    private fun notifyObservers() = observers.forEach { it.counterUpdated(totalFiles) }
 
 }

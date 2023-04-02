@@ -20,14 +20,11 @@ class UnsafeCounter(
     }
 
     private val counters = intervals.map { _ -> 0 }.toMutableList()
-    private val longestFiles = mutableListOf<Pair<String, Int>>()
+    private var longestFiles = listOf<Pair<String, Int>>()
 
     override fun submit(file: File, lines: Int) {
         intervals.indexOf(getInterval(lines)).let { counters[it] = counters[it] + 1 }
-        longestFiles.add(Pair(file.name, lines))
-        if (longestFiles.size > numberOfLongestFiles) {
-            longestFiles.remove(longestFiles.minBy { it.second })
-        }
+        longestFiles = (longestFiles + Pair(file.name, lines)).sortedBy { -it.second }.take(numberOfLongestFiles)
     }
 
     private fun getInterval(lines: Int) = intervals.first { lines in it }
@@ -43,5 +40,5 @@ class UnsafeCounter(
 
     override val totalFiles: Int get() = counters.sum()
 
-    override fun getNLongestFiles(): List<String> = longestFiles.sortedBy { -it.second }.map { it.first }
+    override fun getNLongestFiles(): List<String> = longestFiles.map { it.first }
 }
