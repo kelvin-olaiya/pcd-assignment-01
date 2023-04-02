@@ -2,6 +2,9 @@
 import org.gradle.configurationcache.extensions.capitalized
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.stream.Collectors
 
 plugins {
     id("java")
@@ -45,10 +48,22 @@ val verifyAll by tasks.register<DefaultTask>("runVerifyAll") {
  * This function will return an array of string that will be used to mount the container
  * The container will be mounted with all the files and folders of the project, except the build folder
  */
-val allFileButBuildAndHide = File(rootProject.rootDir.path)
-    .listFiles { a -> !(a.name.startsWith(".") || a.name == "build") }
-    .map { it -> "type=bind,source=${it.absolutePath},target=/home/${it.name}" }
-    .flatMap { it ->  listOf("--mount", it) }
+val jpfVerificationSrcFiles = Files.walk(Paths.get(rootProject.rootDir.path))
+    .map { it.toFile() }
+    .filter { it.isDirectory }
+    .filter { it.name == "java" || it.name == "jpf" }
+    .filter { it.parentFile.name == "main" }
+    .map { Pair(it.absolutePath, "src/main/${it.name}") }
+    .collect(Collectors.toList())
+
+val projectFilesButSrc = File(rootProject.rootDir.path).listFiles()
+    .filter { !it.name.startsWith(".") }
+    .filter { it.name != "build" && it.name != "src" }
+    .map { Pair(it.absolutePath, it.name) }
+
+val mountings = (projectFilesButSrc + jpfVerificationSrcFiles)
+    .map { "type=bind,source=${it.first},target=/home/${it.second}" }
+    .flatMap { listOf("--mount", it) }
     .toTypedArray()
 
 /**
@@ -74,6 +89,7 @@ fun cleanOldInstances(name: String, out: OutputStream) = exec {
 // Effectively run the container to verify the fileName passed. The fileName should be a jpf file
 fun runJPF(name: String, fileName: String): () -> ExecResult = {
     //exec { commandLine("ls") }
+    exec { commandLine("docker", "exec", name, "rm", "-rf", "./src/main/kotlin/*") }
     exec { commandLine("docker", "exec", name, "./gradlew", "build") }
     exec { commandLine("docker", "exec", name, "java", "-jar", "/usr/lib/JPF/jpf-core/build/RunJPF.jar", fileName)}
 }
@@ -112,7 +128,7 @@ File(rootProject.rootDir.path + searchingPath).listFiles()
                 // If there isn't the project container, the process should clean the environment (i.e. kill the previous container and starts a new one)
                 if (!stdout.toString().contains(runner)) {
                     cleanOldInstances(runner, stdout)
-                    mountNewContainer(allFileButBuildAndHide, runner, stdout)
+                    mountNewContainer(mountings, runner, stdout)
                 }
             }
             doLast {
@@ -150,7 +166,7 @@ tasks.register("jpfVerify") {
         val stdout = ByteArrayOutputStream()
         // Get all the folders and file of this project and bind them with the docker image
         // NB! .gradle and build should not be included, the compile process should be done with the internal jdk
-        val toMount: Array<String> = allFileButBuildAndHide
+        val toMount: Array<String> = mountings
         // Get the container in execution
         exec {
             commandLine("docker", "container", "ps")
