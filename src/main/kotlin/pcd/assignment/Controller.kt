@@ -10,13 +10,14 @@ import kotlin.io.path.isDirectory
 class Controller {
 
     private val stopFlag = Flag()
-    private val batches = getJavaFilesFrom(Path.of(ROOT_FOLDER))
-        .generateBatches(DEFAULT_N_WORKERS)
-        .filter { it.isNotEmpty() }
+    private val workload = getJavaFilesFrom(Path.of(ROOT_FOLDER))
 
-    fun startCounting(counter: Counter) {
+
+    fun startCounting(counter: Counter, numberOfWorkers: Int = DEFAULT_N_WORKERS) {
         stopFlag.reset()
-        batches.map { Worker(it, counter, stopFlag) }
+        workload.generateBatches(numberOfWorkers)
+            .filter { it.isNotEmpty() }
+            .map { Worker(it, counter, stopFlag) }
             .withIndex()
             .map { Thread(it.value, "[Thread-${it.index}]") }
             .forEach { it.start() }
@@ -42,6 +43,6 @@ class Controller {
     companion object {
         private val SEP = File.separator
         private val ROOT_FOLDER = "${SEP}home${SEP}kelvin"
-        private const val DEFAULT_N_WORKERS = 10
+        private const val DEFAULT_N_WORKERS = 9
     }
 }

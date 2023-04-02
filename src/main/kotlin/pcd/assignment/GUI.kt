@@ -81,20 +81,21 @@ class GUI(
         val controlsPanel = Box(BoxLayout.X_AXIS)
         val startButton = JButton("START").also { it.alignmentX = Component.CENTER_ALIGNMENT }
         val stopButton = JButton("STOP").also { it.alignmentX = Component.CENTER_ALIGNMENT }
+        val workersInput = InputBox("# Workers")
         controlsPanel.add(startButton)
         controlsPanel.add(Box.createRigidArea(Dimension(20, 0)))
         controlsPanel.add(stopButton)
         controlsPanel.add(Box.createGlue())
         // controlsPanel.add(totalFilesBox)
+        controlsPanel.add(workersInput)
         startButton.addActionListener {
-            totalFilesBox.reset()
             val maxLines = maxLinesBox.spinner.model.value as Int
             val intervals = intervalsBox.spinner.model.value as Int
             val longestFiles = longestFilesBox.spinner.model.value as Int
-            counter = SafeObservableCounter(maxLines, intervals, longestFiles)
-            counter?.let {
+            val numberOfWorkers = workersInput.spinner.model.value as Int
+            counter = SafeObservableCounter(maxLines, intervals, longestFiles).also {
                 it.addObserver(this)
-                controller.startCounting(it)
+                controller.startCounting(it, numberOfWorkers)
             }
         }
         stopButton.addActionListener { controller.stopCounting() }
