@@ -23,14 +23,10 @@ private class InputBox(prompt: String) : Box(BoxLayout.Y_AXIS) {
     }
 }
 
-private class ListView(listModel: ListModel<String>) : JList<String>(listModel) {
-    init {
-        preferredSize = Dimension(300, 400)
-        maximumSize = preferredSize
-        minimumSize = preferredSize
-        cellRenderer = DefaultListCellRenderer()
-    }
-}
+private class ListView(listModel: ListModel<String>) : JScrollPane(JList(listModel).apply {
+    minimumSize = Dimension(300, 400)
+    cellRenderer = DefaultListCellRenderer()
+})
 
 class GUI(
     controller: Controller,
@@ -43,8 +39,8 @@ class GUI(
     private var counter: ObservableCounter? = null
 
     init {
-        frame.setSize(750, 380)
-        frame.isResizable = false
+        frame.setSize(800, 600)
+        // frame.isResizable = false
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         val panel = frame.contentPane
 

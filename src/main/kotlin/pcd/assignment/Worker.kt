@@ -15,7 +15,6 @@ class Worker(
                 return
             }
             counter.submit(file, file.readLines().size)
-            Thread.sleep(5)
         }
     }
 }
