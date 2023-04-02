@@ -10,7 +10,7 @@ import kotlin.io.path.isDirectory
 class Controller {
 
     private val stopFlag = Flag()
-    private val workload = getJavaFilesFrom(Path.of(ROOT_FOLDER))
+    private val workload = getJavaFilesFrom(Path.of(DEFAULT_ROOT_FOLDER))
 
 
     fun startCounting(counter: Counter, numberOfWorkers: Int = DEFAULT_N_WORKERS) {
@@ -41,8 +41,7 @@ class Controller {
     fun stopCounting() = stopFlag.set()
 
     companion object {
-        private val SEP = File.separator
-        private val ROOT_FOLDER = "${SEP}home${SEP}kelvin"
+        private val DEFAULT_ROOT_FOLDER = System.getProperty("user.home")
         private const val DEFAULT_N_WORKERS = 9
     }
 }
