@@ -12,7 +12,6 @@ class Controller {
     private val stopFlag = Flag()
     private val workload = getJavaFilesFrom(Path.of(DEFAULT_ROOT_FOLDER))
 
-
     fun startCounting(counter: Counter, numberOfWorkers: Int = DEFAULT_N_WORKERS) {
         stopFlag.reset()
         workload.generateBatches(numberOfWorkers)
