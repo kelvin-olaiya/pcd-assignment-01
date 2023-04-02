@@ -33,7 +33,7 @@ class UnsafeCounter(
 
     override fun toString(): String = buildString {
         intervals.forEachIndexed { index, range ->
-            append("[$range] has ${counters[index]} files\n")
+            append("Range[$range] has ${counters[index]} files\n")
         }
         append("For a total of: $totalFiles files")
     }

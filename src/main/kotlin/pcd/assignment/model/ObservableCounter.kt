@@ -1,6 +1,6 @@
 package pcd.assignment.model
 
-import pcd.assignment.CounterObserver
+import pcd.assignment.view.CounterObserver
 
 interface ObservableCounter : Counter {
 
