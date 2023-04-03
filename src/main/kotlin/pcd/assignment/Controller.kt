@@ -5,9 +5,11 @@ import pcd.assignment.view.View
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.*
 import java.util.concurrent.CountDownLatch
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
+import kotlin.jvm.optionals.getOrElse
 
 private typealias Batch = List<File>
 
@@ -33,10 +35,11 @@ class Controller(
 
     private fun List<File>.generateBatches(nThreads: Int): List<List<File>> {
         val numberOfFiles = this.size
-        val filesPerBatch = (numberOfFiles / nThreads).let { if (it == 0) numberOfFiles else it }
-        val splitIndex = ((numberOfFiles - (numberOfFiles % nThreads)) - filesPerBatch).let {
-            if (it < 0) numberOfFiles else it
-        }
+        val coercedNThread = nThreads.coerceAtLeast(1)
+        val filesPerBatch = Optional.of(numberOfFiles / coercedNThread)
+            .filter { it != 0 }.getOrElse { numberOfFiles }
+        val splitIndex = Optional.of((numberOfFiles - (numberOfFiles % coercedNThread)) - filesPerBatch)
+            .filter { it != 0 }.getOrElse { numberOfFiles }
         return slice(0 until splitIndex).chunked(filesPerBatch) + listOf(subList(splitIndex, numberOfFiles))
     }
 
