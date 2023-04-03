@@ -18,6 +18,8 @@ class GUIView : View, CounterObserver {
     private val leaderboard = ListView(longestFilesModel)
     private val totalFilesBox = NumericBox("Files counted:")
     private val durationBox = NumericBox("Duration (ms):")
+    private val startButton = JButton("START").also { it.alignmentX = Component.CENTER_ALIGNMENT }
+    private val stopButton = JButton("STOP").also { it.alignmentX = Component.CENTER_ALIGNMENT }
     private var counter: ObservableCounter? = null
 
     init {
@@ -44,8 +46,6 @@ class GUIView : View, CounterObserver {
         mainPanel.border = BorderFactory.createEmptyBorder(20, 20, 20, 20)
 
         val controlsPanel = Box(BoxLayout.X_AXIS)
-        val startButton = JButton("START").also { it.alignmentX = Component.CENTER_ALIGNMENT }
-        val stopButton = JButton("STOP").also { it.alignmentX = Component.CENTER_ALIGNMENT }
         val workersInput = InputBox("# Workers")
         controlsPanel.add(totalFilesBox)
         controlsPanel.add(Box.createGlue())
@@ -56,6 +56,7 @@ class GUIView : View, CounterObserver {
         controlsPanel.add(stopButton)
         controlsPanel.add(Box.createGlue())
         controlsPanel.add(workersInput)
+        stopButton.isEnabled = false
         startButton.addActionListener {
             totalFilesBox.reset()
             durationBox.reset()
@@ -67,8 +68,12 @@ class GUIView : View, CounterObserver {
                 it.addObserver(this)
                 controller.startCounting(it, numberOfWorkers)
             }
+            startButton.isEnabled = false
+            stopButton.isEnabled = true
         }
-        stopButton.addActionListener { controller.stopCounting() }
+        stopButton.addActionListener {
+            controller.stopCounting()
+        }
         controlsPanel.border = BorderFactory.createEmptyBorder(0, 10, 10, 10)
         controlsPanel.alignmentX = Component.CENTER_ALIGNMENT
 
@@ -96,8 +101,12 @@ class GUIView : View, CounterObserver {
     }
 
     override fun countingCompleted(duration: Long) {
-        durationBox.update(duration.toInt())
-        counter?.let { totalFilesBox.update(it.totalFiles) }
+        SwingUtilities.invokeLater {
+            durationBox.update(duration.toInt())
+            counter?.let { totalFilesBox.update(it.totalFiles) }
+            startButton.isEnabled = true
+            stopButton.isEnabled = false
+        }
     }
 }
 

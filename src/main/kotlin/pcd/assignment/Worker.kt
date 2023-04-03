@@ -15,6 +15,7 @@ class Worker(
         println("${Thread.currentThread().name} accepted a batch of size ${files.size}")
         for (file in files) {
             if (stopFlag.isSet()) {
+                completeLatch.countDown()
                 return
             }
             counter.submit(file, file.readLines().size)
