@@ -11,7 +11,7 @@ import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.jvm.optionals.getOrElse
 
-private typealias Batch = List<File>
+private typealias Batch = List<String>
 
 class Controller(
     private val view: View,
@@ -27,13 +27,13 @@ class Controller(
         LauncherAndViewNotifier(batches, counter, view, stopFlag).start()
     }
 
-    private fun getJavaFilesFrom(path: Path): List<File> = Files.walk(path)
+    private fun getJavaFilesFrom(path: Path): List<String> = Files.walk(path)
         .filter { it.extension == "java" }
         .filter { !it.isDirectory() }
-        .map { it.toFile() }
+        .map { it.toFile().absolutePath }
         .toList()
 
-    private fun List<File>.generateBatches(nThreads: Int): List<List<File>> {
+    private fun List<String>.generateBatches(nThreads: Int): List<Batch> {
         val numberOfFiles = this.size
         val coercedNThread = nThreads.coerceAtLeast(1)
         val filesPerBatch = Optional.of(numberOfFiles / coercedNThread)
