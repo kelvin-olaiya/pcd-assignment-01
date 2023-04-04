@@ -1,6 +1,7 @@
 package pcd.assignment.model
 
 import java.io.File
+import java.util.TreeSet
 import java.util.stream.Stream
 
 class UnsafeCounter(
@@ -20,11 +21,14 @@ class UnsafeCounter(
     }
 
     private val counters = intervals.map { _ -> 0 }.toMutableList()
-    private var longestFiles = listOf<Pair<String, Int>>()
+    private val longestFiles = TreeSet<Pair<String, Int>> { a, b -> b.second - a.second }
 
     override fun submit(file: File, lines: Int) {
         intervals.indexOf(getInterval(lines)).let { counters[it] = counters[it] + 1 }
-        longestFiles = (longestFiles + Pair(file.name, lines)).sortedBy { -it.second }.take(numberOfLongestFiles)
+        with(longestFiles)  {
+            add(Pair(file.name, lines))
+            if (size > numberOfLongestFiles) remove(last())
+        }
     }
 
     private fun getInterval(lines: Int) = intervals.first { lines in it }
