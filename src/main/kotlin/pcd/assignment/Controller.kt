@@ -1,17 +1,14 @@
 package pcd.assignment
 
 import pcd.assignment.model.Counter
+import pcd.assignment.pcd.assignment.Batch
 import pcd.assignment.view.View
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
-import java.util.concurrent.CountDownLatch
 import kotlin.io.path.extension
 import kotlin.io.path.isDirectory
 import kotlin.jvm.optionals.getOrElse
-
-private typealias Batch = List<String>
 
 class Controller(
     private val view: View,
@@ -48,24 +45,5 @@ class Controller(
     companion object {
         private val DEFAULT_ROOT_FOLDER = System.getProperty("user.home")
         private val DEFAULT_N_WORKERS = Runtime.getRuntime().availableProcessors() + 1
-    }
-}
-
-private class LauncherAndViewNotifier(
-    private val batches: Iterable<Batch>,
-    private val counter: Counter,
-    private val view: View,
-    private val stopFlag: Flag,
-) : Thread("CompletionWaiter") {
-    override fun run() {
-        val completionLatch = CountDownLatch(batches.count())
-        val workers = batches.map { Worker(it, counter, stopFlag, completionLatch) }
-            .withIndex()
-            .map { Thread(it.value, "[Worker-${it.index}]") }
-        val start = System.currentTimeMillis()
-        workers.forEach { it.start() }
-        completionLatch.await()
-        val duration = System.currentTimeMillis() - start
-        view.countingCompleted(duration)
     }
 }
