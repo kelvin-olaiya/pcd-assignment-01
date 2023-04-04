@@ -1,2 +1,2 @@
-package pcd.assignment.pcd.assignment
+package pcd.assignment
 typealias Batch = List<String>

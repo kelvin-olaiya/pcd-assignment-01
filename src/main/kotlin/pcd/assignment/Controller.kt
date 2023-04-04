@@ -1,7 +1,6 @@
 package pcd.assignment
 
 import pcd.assignment.model.Counter
-import pcd.assignment.pcd.assignment.Batch
 import pcd.assignment.view.View
 import java.nio.file.Files
 import java.nio.file.Path
