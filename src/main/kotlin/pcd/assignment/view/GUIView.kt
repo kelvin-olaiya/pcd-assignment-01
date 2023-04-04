@@ -28,9 +28,9 @@ class GUIView : View, CounterObserver {
         val panel = frame.contentPane
 
         val inputsPanel = Box(BoxLayout.X_AXIS)
-        val maxLinesBox = InputBox("Max. lines")
-        val intervalsBox = InputBox("N. Intervals")
-        val longestFilesBox = InputBox("# of longestFiles")
+        val maxLinesBox = NumericInputBox("Max. lines")
+        val intervalsBox = NumericInputBox("N. Intervals")
+        val longestFilesBox = NumericInputBox("# of longestFiles")
 
         inputsPanel.add(maxLinesBox)
         inputsPanel.add(Box.createGlue())
@@ -46,7 +46,7 @@ class GUIView : View, CounterObserver {
         mainPanel.border = BorderFactory.createEmptyBorder(20, 20, 20, 20)
 
         val controlsPanel = Box(BoxLayout.X_AXIS)
-        val workersInput = InputBox("# Workers")
+        val workersInput = NumericInputBox("# Workers", 1)
         controlsPanel.add(totalFilesBox)
         controlsPanel.add(Box.createGlue())
         controlsPanel.add(durationBox)
@@ -110,9 +110,9 @@ class GUIView : View, CounterObserver {
     }
 }
 
-private class InputBox(prompt: String) : Box(BoxLayout.Y_AXIS) {
+private class NumericInputBox(prompt: String, initialValue: Int = 0) : Box(BoxLayout.Y_AXIS) {
 
-    val spinner = JSpinner(SpinnerNumberModel(0, 0, Int.MAX_VALUE, 1))
+    val spinner = JSpinner(SpinnerNumberModel(initialValue, 0, Int.MAX_VALUE, 1))
     init {
         add(JLabel(prompt).apply { alignmentX = Component.RIGHT_ALIGNMENT })
         add(spinner.apply { setSizeForText(this) })
