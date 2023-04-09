@@ -3,7 +3,7 @@ package lab02.jpf;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TestCLI {
+public class TestGUI {
 
     private static final List<Integer> BATCH_1 = new ArrayList<Integer>() {{
         add(1); add(5); add(12);
@@ -13,8 +13,13 @@ public class TestCLI {
         add(22); add(2); add(7);
     }};
 
-    public static class Counter {
+    public static class ObservableCounter {
         private final int[] list = new int[3];
+        private final CounterObserver observer;
+
+        public ObservableCounter(CounterObserver observer) {
+            this.observer = observer;
+        }
 
         synchronized public void submit(int count) {
             if (count < 5) {
@@ -24,6 +29,11 @@ public class TestCLI {
             } else {
                 list[2] = list[2] + 1;
             }
+            int sum = 0;
+            for(int l : list) {
+                sum += l;
+            }
+            this.observer.counterUpdated(sum);
         }
 
         synchronized public int getCount(int interval) {
@@ -34,8 +44,8 @@ public class TestCLI {
     public static class Worker extends Thread {
 
         private final List<Integer> fileLengths;
-        private final Counter counter;
-        public Worker(Counter counter, List<Integer> lengths) {
+        private final ObservableCounter counter;
+        public Worker(ObservableCounter counter, List<Integer> lengths) {
             this.fileLengths = lengths;
             this.counter = counter;
         }
@@ -48,9 +58,9 @@ public class TestCLI {
     }
 
     public static class Launcher extends Thread {
-        private final Counter counter;
-        private final View view;
-        public Launcher(Counter counter, View view) {
+        private final ObservableCounter counter;
+        private final CounterObserver view;
+        public Launcher(ObservableCounter counter, CounterObserver view) {
             this.counter = counter;
             this.view = view;
         }
@@ -70,23 +80,22 @@ public class TestCLI {
     }
 
     public static class Controller {
-        private final View view;
+        private final CounterObserver view;
 
-        public Controller(View view) {
+        public Controller(CounterObserver view) {
             this.view = view;
         }
-        public void startCounting(Counter counter) {
+        public void startCounting(ObservableCounter counter) {
             new Launcher(counter, view).start();
         }
     }
 
-    public static class View extends Thread {
-        private final Counter counter;
-        public View() {
-            this.counter = new Counter();
-        }
+    public static class CounterObserver {
+        private final ObservableCounter counter;
+        private int filesCounted = 0;
 
-        public void run() {
+        public CounterObserver() {
+            this.counter = new ObservableCounter(this);
             new Controller(this).startCounting(this.counter);
         }
 
@@ -95,9 +104,14 @@ public class TestCLI {
             assert counter.getCount(1) == 2;
             assert counter.getCount(2) == 2;
         }
+
+        public void counterUpdated(int filesCounted) {
+            this.filesCounted++;
+            assert this.filesCounted == filesCounted;
+        }
     }
 
     public static void main(String[] args) {
-        new View().start();
+        new CounterObserver();
     }
 }
