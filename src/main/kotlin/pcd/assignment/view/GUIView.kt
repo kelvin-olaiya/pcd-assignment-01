@@ -8,9 +8,9 @@ import java.awt.Component
 import java.awt.Dimension
 import javax.swing.*
 
-class GUIView : View, CounterObserver {
+class GUIView(withBag: Boolean = false) : View, CounterObserver {
 
-    private val controller = Controller(this)
+    private val controller = Controller(this, withBag = withBag)
     private val frame = JFrame("Assignment#01")
     private val countingListModel = DefaultListModel<String>()
     private val longestFilesModel = DefaultListModel<String>()

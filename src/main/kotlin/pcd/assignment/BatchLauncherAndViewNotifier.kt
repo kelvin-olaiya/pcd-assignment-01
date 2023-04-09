@@ -20,12 +20,12 @@ class BatchLauncherAndViewNotifier(
 ) : Thread("CompletionWaiter"), Launcher {
 
     override fun run() {
+        val start = System.currentTimeMillis()
         val batches = getJavaFilesFrom(Path.of(rootFolder)).generateBatches(numberOfWorker)
         val completionLatch = CountDownLatch(batches.count())
         val workers = batches.map { Worker(it, counter, stopFlag, completionLatch) }
             .withIndex()
             .map { Thread(it.value, "[Worker-${it.index}]") }
-        val start = System.currentTimeMillis()
         workers.forEach { it.start() }
         completionLatch.await()
         val duration = System.currentTimeMillis() - start

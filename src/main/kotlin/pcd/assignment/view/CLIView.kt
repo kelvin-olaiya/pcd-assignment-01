@@ -7,10 +7,11 @@ class CLIView(
     maxLines: Int,
     numberOfIntervals: Int,
     numberOfLongestFiles: Int,
-    numberOfWorkers: Int = Runtime.getRuntime().availableProcessors() + 1
+    numberOfWorkers: Int = Runtime.getRuntime().availableProcessors() + 1,
+    withBag: Boolean,
 ) : View {
 
-    private val controller = Controller(this)
+    private val controller = Controller(this, withBag = withBag)
     private val counter = SafeCounter(maxLines, numberOfIntervals, numberOfLongestFiles)
 
     init {
