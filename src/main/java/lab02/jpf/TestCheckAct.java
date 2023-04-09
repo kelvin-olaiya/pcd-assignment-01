@@ -38,7 +38,6 @@ public class TestCheckAct {
 	}
 
 	public static void main(String[] args) throws Exception {
-
 		Verify.beginAtomic();
 		Counter c = new Counter();
 		Thread th0 = new MyThread(c);
@@ -50,7 +49,6 @@ public class TestCheckAct {
 		th1.join();
 		int value = c.getCount();
 		assert value == 1;
-
 	}
 
 }
