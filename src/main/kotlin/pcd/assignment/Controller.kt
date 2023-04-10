@@ -6,18 +6,13 @@ import pcd.assignment.view.View
 class Controller(
     private val view: View,
     private val rootFolder: String = DEFAULT_ROOT_FOLDER,
-    private val withBag: Boolean = false,
 ) {
 
     private val stopFlag = Flag()
 
     fun startCounting(counter: Counter, numberOfWorkers: Int = DEFAULT_N_WORKERS) {
         stopFlag.reset()
-        if (withBag) {
-            LauncherAndViewNotifierWithBag(rootFolder, counter, numberOfWorkers, view, stopFlag)
-        } else {
-            BatchLauncherAndViewNotifier(rootFolder, counter, numberOfWorkers, view, stopFlag)
-        }.start()
+        LauncherAndViewNotifierWithBag(rootFolder, counter, numberOfWorkers, view, stopFlag).start()
     }
 
     fun stopCounting() = stopFlag.set()

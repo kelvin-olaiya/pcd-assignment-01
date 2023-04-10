@@ -11,7 +11,7 @@ class CLIView(
     withBag: Boolean,
 ) : View {
 
-    private val controller = Controller(this, withBag = withBag)
+    private val controller = Controller(this)
     private val counter = SafeCounter(maxLines, numberOfIntervals, numberOfLongestFiles)
 
     init {

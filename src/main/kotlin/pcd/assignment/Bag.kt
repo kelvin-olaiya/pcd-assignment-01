@@ -5,22 +5,22 @@ import java.util.*
 import java.util.concurrent.locks.ReentrantLock
 
 // Blocking queue could be used instead
-class BagOfFiles {
-    private val queue = PriorityQueue<File>()
+class Bag<T> {
+    private val queue = LinkedList<T>()
     private val mutex = ReentrantLock()
     private val fileAvailable = mutex.newCondition()
     private val completed = mutex.newCondition()
     private var closed = false
     private var done = false
 
-    fun addFile(file: File) {
+    fun addTask(task: T) {
         mutex.lock()
-        queue.add(file)
+        queue.add(task)
         fileAvailable.signalAll()
         mutex.unlock()
     }
 
-    fun getFile(): Optional<File> {
+    fun getTask(): Optional<T> {
         try {
             mutex.lock()
             while (queue.isEmpty() && !closed) {
@@ -51,13 +51,4 @@ class BagOfFiles {
     }
 
     private fun isCompleted(): Boolean = this.closed && queue.isEmpty()
-
-    fun awaitCompletion() = try {
-        mutex.lock()
-        while(!isCompleted()) {
-            completed.await();
-        }
-    } finally {
-        mutex.unlock()
-    }
 }

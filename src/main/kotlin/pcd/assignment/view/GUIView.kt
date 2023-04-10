@@ -10,7 +10,7 @@ import javax.swing.*
 
 class GUIView(withBag: Boolean = false) : View, CounterObserver {
 
-    private val controller = Controller(this, withBag = withBag)
+    private val controller = Controller(this)
     private val frame = JFrame("Assignment#01")
     private val countingListModel = DefaultListModel<String>()
     private val longestFilesModel = DefaultListModel<String>()
