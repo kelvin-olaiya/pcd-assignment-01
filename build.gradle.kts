@@ -8,7 +8,7 @@ import java.util.stream.Collectors
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm") version "1.9.25"
     application
 }
 
